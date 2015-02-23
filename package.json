@@ -15,5 +15,8 @@
   "bugs": {
     "url": "https://github.com/weisjohn/tessel-code/issues"
   },
-  "homepage": "https://github.com/weisjohn/tessel-code"
+  "homepage": "https://github.com/weisjohn/tessel-code",
+  "dependencies": {
+    "ir-attx4": "^0.2.6"
+  }
 }
