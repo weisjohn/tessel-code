@@ -1,6 +1,6 @@
 var tessel = require('tessel');
 var port = tessel.port['A'];
-var apple = require('tessel-apple-ir-remote')(port);
+var apple = require('tessel-apple-remote')(port);
 
 function sub_all(prefix) {
     if (!prefix) prefix = "";
