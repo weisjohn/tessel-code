@@ -20,7 +20,10 @@
     "ambient-attx4": "^0.2.4",
     "async": "^0.9.0",
     "ir-attx4": "^0.2.6",
+    "minimist": "^1.1.1",
     "servo-pca9685": "^0.1.3",
-    "tessel-apple-remote": "^0.1.1"
+    "tessel-apple-remote": "^0.1.1",
+    "twilio": "^1.10.0",
+    "underscore": "^1.7.0"
   }
 }
