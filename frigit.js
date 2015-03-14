@@ -1,74 +1,95 @@
 var tessel = require('tessel');
+var async = require('async');
+
+// climate
+var climatelib = require('climate-si7020');
+var climate = climatelib.use(tessel.port['A']);
+
+// ambient
 var ambientlib = require('ambient-attx4');
- 
-var ambient = ambientlib.use(tessel.port['A']);
+var ambient = ambientlib.use(tessel.port['B']);
 
 
+// system config
+var config = { read_interval: 500 }
 
-ambient.on('ready', function () {
-    
-    // get light data
-    setInterval(function () {
-        ambient.getLightLevel(function(err, ldata) {
-            detect_door(ldata);
-        });
+// system state
+var state = {
+    door: false,
+    comp: false,
+    light: null,
+    sound: null,
+    humid: null,
+    temp: null,
+    avg: { light: 0, sound: 0 },
+    n: { light: 0, sound: 0 },
+    start: {}
+};
 
-        ambient.getSoundLevel( function(err, sdata) {
-            if (err) throw err;
-            detect_compressor(sdata);
-        });
 
-    }, 500);
-
+// startup
+async.parallel([
+    function(cb) { climate.on('ready', cb); },
+    function(cb) { ambient.on('ready', cb); },
+], function() {
+    console.log('modules are ready');
+    climateloop();
+    ambientloop();
+    setTimeout(statelogger, 1e3);
 });
 
+// connection to hardware loop for climate
+function climateloop() {
+    climate.readTemperature('f', function(err, temp) {
+        climate.readHumidity(function(err, humid) {
+            state.temp = temp;
+            state.humid = humid;
+            setTimeout(climateloop, config.read_interval);
+        });
+    });
+}
 
-var compressor_on = false, start_compressor;
-var avg_compressor = 0, n_compressor = 0;
+// connection to hardware loop for ambient
+function ambientloop() {
+    ambient.getLightLevel(function(err, light) {
+        ambient.getSoundLevel(function(err, sound) {
+            state.light = light;
+            state.sound = sound;
+            detect('door', 'light');
+            detect('comp', 'sound');
+            setTimeout(ambientloop, config.read_interval);
+        });
+    });
+}
 
-function detect_compressor(sound) {
-    console.log('sound', sound)
-
-    if (avg_compressor > 0 && sound > (2 * avg_compressor)) {
-        open_compressor = true;
-        if (!start_compressor) {
-            start_compressor = Date.now();
-        }
-    } else {
-        console.log('avg_compressor', avg_compressor, 'n', n_compressor);
-        avg_compressor = ((avg_compressor * n_compressor) + sound) / (n_compressor + 1);
-        n_compressor++;
-
-        open_compressor = false;
-        if (start_compressor) { 
-            var delta = (Date.now() - start_compressor) / 1e3;
-            console.log("Compressor was on for ", delta, " seconds");
-        }
-        start_compressor = false;
-    }
+function statelogger() {
+    var log = ["light", "sound", "humid", "temp"].reduce(function(p, c) {  
+        var val = state[c];
+        if (val) val = val.toFixed(4);
+        return p + c + ":" + val + " ";
+    }, "");
+    console.log(log);
+    setTimeout(statelogger, config.read_interval);
 }
 
 
-var open_door = false, start_door;
-var avg_door = 0, n_door = 0;
-function detect_door(light) {
-    // console.log(light, avg_door);
+function detect(item, type) {
 
-    if (avg_door > 0 && light > (2 * avg_door)) {
-        open_door = true;
-        if (!start_door) {
-            start_door = Date.now();
+    if (state.avg[type] > 0 && state[type] > (2 * state.avg[type])) {
+        state[item] = true;
+        if (!state.start[item]) {
+            state.start[item] = Date.now();
         }
     } else {
-        // console.log('avg_door', avg_door, 'n', n_door);
-        avg_door = ((avg_door * n_door) + light) / (n_door + 1);
-        n_door++;
-
-        open_door = false;
-        if (start_door) { 
-            var delta = (Date.now() - start_door) / 1e3;
-            console.log("Door was open for ", delta, " seconds");
+        state.avg[type] = ((state.avg[type] * state.n[type]) + state[type]) / (state.n[type] + 1);
+        state.n[type]++;
+        state[item] = false;
+        if (state.start[item]) { 
+            var delta = (Date.now() - state.start[item]) / 1e3;
+            console.log(item, "was ", item == "door" ? "open" : "on", " for ", delta, " seconds");
         }
-        start_door = false;
+        state.start[item] = false;
     }
+
 }
+
