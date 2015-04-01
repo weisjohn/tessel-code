@@ -10,7 +10,7 @@ var tessel = require('tessel');
 // if you're using a si7020 replace this lib with climate-si7020
 var climatelib = require('climate-si7020');
 
-var climate = climatelib.use(tessel.port['A']);
+var climate = climatelib.use(tessel.port['C']);
 
 
 climate.on('ready', function () {
