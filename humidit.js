@@ -49,7 +49,7 @@ climate.on('ready', function () {
             twilio.sendMessage({
                 from: opts[2],
                 to: opts[3],
-                body: "Warning, humidity level is too high. Detected humidity of " + humid.toFixed(3) + "%"
+                body: "Warning, humidity is too high: " + humid.toFixed(3) + "%"
             }, function(err, resp) {
 
                 if (err) {
