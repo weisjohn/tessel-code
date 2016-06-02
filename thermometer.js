@@ -36,11 +36,11 @@ function record(data) {
 }
 
 function measure() {
-  climate.readTemperature('f', function (err, temp) {
+  climate.readTemperature('f', function (err, temperature) {
     climate.readHumidity(function (err, humidity) {
-      console.log('Degrees:', temp.toFixed(4) + 'F', 'Humidity:', humidity.toFixed(4) + '%RH');
+      console.log('Degrees:', temperature.toFixed(4) + 'F', 'Humidity:', humidity.toFixed(4) + '%RH');
 
-      record({ temp: temp, humidity: humidity });
+      record({ temperature: temperature, humidity: humidity });
 
       // read every minute
       setTimeout(measure, interval);
