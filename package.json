@@ -20,6 +20,7 @@
     "ambient-attx4": "^0.2.4",
     "async": "^0.9.0",
     "climate-si7020": "^0.1.1",
+    "firebase": "^3.0.3",
     "ir-attx4": "^0.2.6",
     "servo-pca9685": "^0.1.3",
     "tessel-apple-remote": "^0.1.1",
