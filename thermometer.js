@@ -8,14 +8,14 @@ var http = require('http');
 // config
 var opts = {
   method: 'POST',
-  host: '192.168.0.8',
-  port: '8000',
+  host: 'johnweis.com',
+  port: '80',
   path: '/climate',
   headers: {
     'Content-Type': 'application/json',
   }
 };
-var interval = 1e3;
+var interval = 60e3;
 
 function record(data) {
 
